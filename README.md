@@ -221,7 +221,7 @@ When using Broker for executing scripts, several built-in variables and function
     ```
     Alternative as a function to keep syntax highlighting intact for better readability.
     ```bash
-  cmd () {
+    cmd () {
         git fetch origin main &&
         git reset --hard origin/main
     }

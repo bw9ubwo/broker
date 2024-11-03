@@ -24,6 +24,7 @@ export COLOR_GREEN="\033[1;32m"
 export COLOR_RED="\033[1;31m"
 export COLOR_CYAN="\033[1;36m"
 export COLOR_RESET="\033[0m"
+export COLOR_DIM="\033[2m"
 
 # Variable to control behavior on error
 export BROKER_STOP_ON_ERROR=false
@@ -41,20 +42,33 @@ info() {
 task() {
     local message="$1"
     local command="${*:2}"
-    
-    command_output=$(eval "$command" 2>&1)
-    #command_output=$(eval "$command" 2>&1 1>/dev/null)
 
+    local start_timestamp=$(date +"%H:%M:%S")
+
+    command_output=$(eval "$command" 2>&1)
     local status=$?
+
+
     if [ $status -eq 0 ]; then
-        echo -e "[${COLOR_GREEN}X${COLOR_RESET}] ${message}"
+        echo -e "${COLOR_DIMs}${start_timestamp}${COLOR_RESET} [${COLOR_GREEN}DONE${COLOR_RESET}] ${message}"
     else
-        echo -e "[${COLOR_RED}!${COLOR_RESET}] ${message}\n\n$command_output\n"
+        echo -e "${COLOR_DIMs}${start_timestamp}${COLOR_RESET} [${COLOR_RED}FAIL${COLOR_RESET}] ${message}"
+        code "$command_output"
+        
         if [ "$BROKER_STOP_ON_ERROR" = true ]; then
             error "Error occurred. Please review the output above for details."
         fi
     fi
+
     return $status
+}
+
+code() {
+    local message="$1"
+    indent="| "
+    echo -e "${COLOR_DIM}"
+    echo -e "$command_output" | fold -s -w 50 | sed "s/^/$indent/"
+    echo -e "${COLOR_RESET}"
 }
 
 success() {
@@ -104,7 +118,7 @@ template() {
 }
 
 # Export functions for subshell use
-export -f headline task info success error template
+export -f headline task info success error code template
 
 # Function to display usage/help information
 usage() {
